@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data file check — Trade With Vibes</title>
+<style>
+body{background:#050A14;color:#E6F1FF;font-family:system-ui,Arial,sans-serif;margin:0;padding:18px;max-width:760px}
+h1{font-size:1.15rem;color:#00FF9C} label{display:block;margin:14px 0 6px;color:#8FB0D0;font-size:.9rem}
+input{width:100%;box-sizing:border-box;padding:12px;border-radius:6px;border:1px solid #1d3a5c;background:#0B1A2E;color:#fff;font-size:1rem}
+button{margin-top:12px;padding:12px 22px;border-radius:6px;border:0;background:#00FF9C;color:#021;font-weight:700;font-size:1rem}
+.r{margin-top:16px;padding:12px 14px;border-radius:6px;border:1px solid #1d3a5c;background:#0B1A2E;line-height:1.6}
+.ok{color:#00FF9C;font-weight:700}.bad{color:#FF3B5C;font-weight:700}.mid{color:#FFD400;font-weight:700}
+</style></head><body>
+<h1>Data file check</h1>
+<div style="color:#8FB0D0;font-size:.9rem">Opens your daily backup file the same way the app does and tells you if it is OK. Nothing is saved.</div>
+<label>Web address of the daily file</label>
+<input id="u" value="https://nepsevibes.com/data/latest.json" inputmode="url" autocapitalize="off" autocorrect="off">
+<button onclick="chk()">CHECK</button>
+<div id="out"></div>
+<script>
+async function chk(){
+  const o=document.getElementById('out'); let u=document.getElementById('u').value.trim();
+  o.innerHTML='<div class="r">Checking…</div>'; const t0=performance.now(); const L=[];
+  const add=(c,t)=>L.push('<span class="'+c+'">'+t+'</span>');
+  try{
+    const r=await fetch(u+(u.indexOf('?')>=0?'&':'?')+'t='+Date.now(),{cache:'no-store'});
+    if(!r.ok){ add('bad','&#10007; File not found or blocked (error '+r.status+'). Check the folder name and file name.'); o.innerHTML='<div class="r">'+L.join('<br>')+'</div>'; return; }
+    add('ok','&#10003; File reached (the website allows the app to read it)');
+    const txt=await r.text(), secs=((performance.now()-t0)/1000).toFixed(1), mb=(txt.length/1048576).toFixed(2);
+    add(mb>8?'mid':'ok','&#10003; Size '+mb+' MB, downloaded in '+secs+' s'+(mb>8?' (big: may be slow on a phone)':''));
+    let bk; try{ bk=JSON.parse(txt); }catch(e){ add('bad','&#10007; It is not a valid JSON file'); o.innerHTML='<div class="r">'+L.join('<br>')+'</div>'; return; }
+    if(!bk.LIB){ add('bad','&#10007; This is not a reversal backup (LIB is missing)'); o.innerHTML='<div class="r">'+L.join('<br>')+'</div>'; return; }
+    const keys=Object.keys(bk.LIB); let last='';
+    keys.forEach(k=>(bk.LIB[k]||[]).forEach(b=>{ if(!b.fill && b.date>last) last=b.date; }));
+    add('ok','&#10003; '+keys.length+' scrips found');
+    const days=last?Math.round((Date.now()-new Date(last+'T00:00:00').getTime())/86400000):null;
+    add(days!==null&&days>5?'mid':'ok',(days!==null&&days>5?'&#9888; ':'&#10003; ')+'Latest data date: '+(last||'?')+(days!==null?' ('+days+' day(s) ago)':''));
+    add('ok',bk.SECTOR_MASTER?'&#10003; Sector list present':'&#9888; Sector list missing');
+  }catch(e){ add('bad','&#10007; Could not open the address. Typing mistake, no internet, or the website does not allow it (the .htaccess step). Detail: '+(e.message||e)); }
+  o.innerHTML='<div class="r">'+L.join('<br>')+'</div>';
+}
+</script></body></html>
