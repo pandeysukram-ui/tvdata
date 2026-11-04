@@ -2,7 +2,16 @@
 <!-- saved from url=(0059)file:///C:/Users/DELL/Downloads/trade_with_vibes_suite.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>Trade With Vibes — Suite v40</title>
+<title>Trade With Vibes — Suite v41</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#040B16">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TradeVibes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -528,4 +537,8 @@ function twvShareDone(d){
 </script>
 
 
+<script>
+// make the app installable (home screen / Play Store wrapper); the service worker is network-first so updates always arrive
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){ window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+</script>
 </body></html>
