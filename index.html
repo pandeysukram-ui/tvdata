@@ -2,7 +2,7 @@
 <!-- saved from url=(0059)file:///C:/Users/DELL/Downloads/trade_with_vibes_suite.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>Trade With Vibes — Suite v38</title>
+<title>Trade With Vibes — Suite v40</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -41,7 +41,7 @@ iframe.active{display:block}
   <div class="tab" data-tab="cs" onclick="showTab(&#39;cs&#39;)">CANDLE STRENGTH</div>
   <div class="tab" data-tab="brd" onclick="showTab(&#39;brd&#39;)">MKT BREADTH</div>
   <div class="tab" data-tab="hm" onclick="showTab(&#39;hm&#39;)">HARMONIC</div>
-  <label class="tab" style="cursor:pointer;margin-left:10px;color:#39FF7A">&#128194; LOAD BACKUP .json<input type="file" id="bkInput" accept="application/json,.json,text/plain,*/*" style="display:none" onchange="twvLoadBackup(event)"></label>
+  <label class="tab" style="cursor:pointer;margin-left:10px;color:#39FF7A">&#128194; LOAD BACKUP .json / .csv<input type="file" id="bkInput" multiple accept="application/json,.json,.csv,text/csv,text/plain,*/*" style="display:none" onchange="twvLoadBackup(event)"></label>
   <div class="tab" id="driveBtn" onclick="twvLoadDrive(event)" title="Load backup from your Google Drive link (Shift+click = change link)" style="cursor:pointer;color:#4ADEFF">&#9729; DRIVE</div>   <div class="tab" id="todayBtn" onclick="twvLoadToday(event)" title="Load today's data (all scrips in one go) from your website file (Shift+click, or hold on a phone = change the web address)" style="cursor:pointer;color:#00FF9C">&#8681; TODAY</div>
   <input id="scripSearch" list="scripList" placeholder="search: HDL, SCB…" autocomplete="off" spellcheck="false" onfocus="this.select()" onchange="twvSearchScrip(this.value)" onkeydown="if(event.key==='Enter'){twvSearchScrip(this.value);}" style="display:none;width:104px;font-family:'Share Tech Mono',monospace;font-size:11px;text-transform:uppercase;background:#0C1520;color:#D4E8FF;border:1px solid rgba(0,229,255,.35);padding:6px;border-radius:4px"><datalist id="scripList"></datalist>
   <select id="scripPick" onchange="twvPickScrip(this.value)" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;background:#0C1520;color:#D4E8FF;border:1px solid rgba(0,229,255,.18);padding:6px;border-radius:4px"></select>
@@ -327,8 +327,18 @@ async function twvLoadToday(ev){
       let have=''; Object.keys(TWV_BK.data).forEach(k => TWV_BK.data[k].forEach(b => { if(!b.fill && b.date > have) have = b.date; }));
       if(have && have === last) return;
     }
+    // keep older history already on this device: a scrip the web file only has a few days of (e.g. BARUN) must not lose the bars it had before
+    let kept = 0;
+    if(TWV_BK && TWV_BK.data && bk.SECTOR_MASTER){
+      Object.keys(TWV_BK.data).forEach(sym => {
+        if(!bk.SECTOR_MASTER[sym]) return;
+        const old = TWV_BK.data[sym]; if(!old || old.length < 2) return;
+        const cur = bk.LIB[sym] || (bk.LIB[sym] = []); const have = {}; cur.forEach(b => { have[b.date] = 1; });
+        old.forEach(b => { if(!b.f && !have[b.date]){ cur.push({date:b.date, o:b.o, h:b.h, l:b.l, c:b.c, v:b.v}); kept++; } });
+      });
+    }
     twvApplyBackup(bk, false);
-    twvIdb('readwrite', s => s.put(txt, 'backup')).catch(()=>{});
+    try{ if(kept){ const merged = JSON.stringify(bk); twvIdb('readwrite', s => s.put(merged, 'backup')).catch(()=>{}); } else { twvIdb('readwrite', s => s.put(txt, 'backup')).catch(()=>{}); } }catch(e){ twvIdb('readwrite', s => s.put(txt, 'backup')).catch(()=>{}); }
     const days = last ? Math.round((Date.now() - new Date(last + 'T00:00:00').getTime()) / 86400000) : null;
     setTimeout(() => showToast('Data as of ' + (last || '?') + (days !== null && days > 5 ? ' — ' + days + ' din purano, aajako hoina' : '') + ' · ' + Object.keys(TWV_BK.data).length + ' scrips'), 900);
   }catch(e){ if(!quiet) showToast('Internet / website problem: ' + (e.message || e)); }
@@ -341,16 +351,65 @@ window.addEventListener('load', function(){
   b.addEventListener('touchstart',st,{passive:true}); b.addEventListener('touchend',en); b.addEventListener('touchmove',en); b.addEventListener('touchcancel',en);
   b.addEventListener('click',function(e){ if(fired){ e.stopImmediatePropagation(); e.preventDefault(); fired=false; } },true);
 });
+function twvCsvSplit(line, d){ const out=[]; let cur='', q=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(q && line[i+1]==='"'){ cur+='"'; i++; } else q=!q; } else if(ch===d && !q){ out.push(cur); cur=''; } else cur+=ch; } out.push(cur); return out.map(x=>x.trim()); }
+function twvCsvDate(v){ v=String(v||'').trim(); let m=v.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/); if(m) return m[1]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[3]).slice(-2);
+  const d=new Date(v); if(!isNaN(d)) return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); return ''; }
+// parse one csv text -> {SYM:[bars]} ; symbol comes from a Symbol/Scrip column, or from the file name (BARUN.csv -> BARUN)
+function twvParseCsv(text, fname){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim().length); if(lines.length<2) return {};
+  const delim = (lines[0].split('\t').length>lines[0].split(',').length) ? '\t' : (lines[0].split(';').length>lines[0].split(',').length ? ';' : ',');
+  const H=twvCsvSplit(lines[0],delim).map(h=>h.toUpperCase());
+  const ix=(f)=>H.findIndex(f);
+  const iS=ix(h=>/SYMBOL|SCRIP|TICKER/.test(h)), iD=ix(h=>/DATE/.test(h)), iO=ix(h=>/OPEN/.test(h)), iH=ix(h=>/HIGH/.test(h)), iL=ix(h=>/LOW/.test(h));
+  let iC=ix(h=>/CLOSE/.test(h) && !/PREV|PREVIOUS/.test(h)); if(iC<0) iC=ix(h=>/LTP|PRICE/.test(h));
+  const iV=ix(h=>/VOL|QTY|QUANTITY|SHARES/.test(h));
+  if(iD<0 || iC<0) return {};
+  const base=String(fname||'').replace(/\.[^.]*$/,'').replace(/\s*\(\d+\)\s*$/,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const num=(x)=>{ const n=parseFloat(String(x==null?'':x).replace(/,/g,'')); return isFinite(n)?n:NaN; };
+  const out={};
+  for(let r=1;r<lines.length;r++){
+    const c=twvCsvSplit(lines[r],delim); const sym=((iS>=0?c[iS]:base)||base).toUpperCase().replace(/[^A-Z0-9]/g,''); if(!sym) continue;
+    const date=twvCsvDate(c[iD]); const cl=num(c[iC]); if(!date || !isFinite(cl)) continue;
+    const o=iO>=0?num(c[iO]):cl, h=iH>=0?num(c[iH]):cl, l=iL>=0?num(c[iL]):cl, v=iV>=0?num(c[iV]):0;
+    (out[sym]||(out[sym]=[])).push({date:date, o:isFinite(o)?o:cl, h:isFinite(h)?h:cl, l:isFinite(l)?l:cl, c:cl, v:isFinite(v)?v:0});
+  }
+  return out;
+}
+// merge csv files into what is already on the device, by date (a csv date replaces the same date), then SAVE so it holds
+function twvMergeCsv(items){
+  const lib={}, M={}; let had=0;
+  if(TWV_BK && TWV_BK.data){ Object.keys(TWV_BK.data).forEach(sym=>{ lib[sym]=TWV_BK.data[sym].filter(b=>!b.f).map(b=>({date:b.date,o:b.o,h:b.h,l:b.l,c:b.c,v:b.v})); had++; }); Object.keys(TWV_BK.master||{}).forEach(k=>{ M[k]=TWV_BK.master[k]; }); }
+  let files=0, scrips=0, bars=0; const seen={};
+  items.forEach(it=>{
+    const P=twvParseCsv(it.text, it.name); const syms=Object.keys(P); if(!syms.length) return; files++;
+    syms.forEach(sym=>{
+      const cur=lib[sym]||(lib[sym]=[]); const idx={}; cur.forEach((b,i)=>{ idx[b.date]=i; });
+      P[sym].forEach(b=>{ if(idx[b.date]!=null) cur[idx[b.date]]=b; else { idx[b.date]=cur.length; cur.push(b); } bars++; });
+      if(!M[sym]) M[sym]={n:sym, s:'Other'};
+      if(!seen[sym]){ seen[sym]=1; scrips++; }
+    });
+  });
+  if(!files){ showToast('CSV ma date / close column bhetiena'); return false; }
+  const bk={LIB:lib, SECTOR_MASTER:M};
+  twvApplyBackup(bk, false);
+  twvIdb('readwrite', s => s.put(JSON.stringify(bk),'backup')).catch(()=>{});
+  setTimeout(()=>showToast('CSV: '+files+' file · '+scrips+' scrips · '+bars+' bars saved (stays on this device)'), 900);
+  return true;
+}
 function twvLoadBackup(ev){
-  const f = ev.target.files[0]; if(!f) return;
-  const rd = new FileReader();
-  rd.onload = () => {
-    let bk; try{ bk = JSON.parse(rd.result); }catch(e){ showToast('Backup JSON padhna sakiyena'); return; }
-    if(!bk.LIB){ showToast('Yo reversal backup hoina (LIB chaina)'); return; }
-    twvApplyBackup(bk, false);
-    twvIdb('readwrite', s => s.put(rd.result,'backup')).catch(()=>{});
-  };
-  rd.readAsText(f);
+  const files=[...ev.target.files]; if(!files.length) return;
+  const read=(f)=>new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res({name:f.name,text:rd.result}); rd.onerror=()=>res({name:f.name,text:''}); rd.readAsText(f); });
+  Promise.all(files.map(read)).then(list=>{
+    const js=list.filter(x=>/\.json$/i.test(x.name)), cs=list.filter(x=>!/\.json$/i.test(x.name));
+    if(js.length){
+      let bk; try{ bk=JSON.parse(js[0].text); }catch(e){ showToast('Backup JSON padhna sakiyena'); return; }
+      if(!bk.LIB){ showToast('Yo reversal backup hoina (LIB chaina)'); return; }
+      twvApplyBackup(bk, false);
+      twvIdb('readwrite', s => s.put(js[0].text,'backup')).catch(()=>{});
+    }
+    if(cs.length) twvMergeCsv(cs);
+    ev.target.value='';
+  });
 }
 // every time the app opens: fetch today's data by itself (users do not need to tap anything); skipped if refreshed in the last 6 hours
 function twvAutoToday(hadSaved){
