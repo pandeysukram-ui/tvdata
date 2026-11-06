@@ -2,7 +2,7 @@
 <!-- saved from url=(0059)file:///C:/Users/DELL/Downloads/trade_with_vibes_suite.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>Trade With Vibes — Suite v42</title>
+<title>Trade With Vibes — Suite v43</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#040B16">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -35,6 +35,16 @@ iframe{position:absolute;left:0;top:0;width:calc(100% / var(--z,1));height:calc(
 #scripPick{max-width:230px;min-width:130px}
 iframe.active{display:block}
 .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(0,229,255,.5)}
+.twv-foot{flex:0 0 auto;padding:4px 12px 4px 58px;background:#080E1A;border-top:1px solid rgba(0,229,255,.18);font-family:'Share Tech Mono',monospace;font-size:9.5px;color:rgba(212,232,255,.55);display:flex;gap:10px;flex-wrap:wrap;align-items:center;line-height:1.5}
+.twv-foot a{color:#39FF7A;cursor:pointer;text-decoration:none}
+@media (max-width:600px){.twv-foot{font-size:8.5px;padding:3px 8px 3px 48px;gap:8px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}.twv-foot span:nth-child(2){display:none}}
+#twvTerms{position:fixed;inset:0;background:rgba(2,6,12,.88);z-index:80;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+#twvTerms .box{max-width:760px;width:100%;background:#0C1520;border:1px solid rgba(57,255,122,.35);border-radius:8px;padding:18px 20px;color:#D4E8FF;font-size:13px;line-height:1.65}
+#twvTerms h2{font-size:16px;color:#39FF7A;margin-bottom:8px}
+#twvTerms h3{font-size:13px;color:#00E5FF;margin:12px 0 3px}
+#twvTerms p{margin:0 0 3px}
+#twvTerms .en{color:#9FB4D0}
+#twvTerms button{margin-top:14px;padding:8px 22px;border-radius:4px;border:1px solid #39FF7A;background:transparent;color:#39FF7A;font-weight:700;cursor:pointer;font-family:inherit}
 .twv-wm{position:fixed;left:0;right:0;top:44px;bottom:0;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:39;user-select:none}
 .twv-wm b{font-family:'Chakra Petch',sans-serif;font-weight:700;letter-spacing:.06em;font-size:clamp(70px,18vw,230px);line-height:1;color:#D4E8FF;opacity:.07;white-space:nowrap}
 .twv-wm span{font-family:'Share Tech Mono',monospace;letter-spacing:.4em;font-size:clamp(10px,1.5vw,18px);color:#D4E8FF;opacity:.07;margin-top:6px}
@@ -69,6 +79,37 @@ iframe.active{display:block}
   <iframe id="frame-hm"></iframe>
 </div>
 
+<div class="twv-foot"><span>&copy; 2026 Trade With Vibes. All rights reserved / सबै अधिकार सुरक्षित।</span><span>सिक्ने उद्देश्यका लागि, किन्ने/बेच्ने सल्लाह होइन / For learning, not advice.</span><a onclick="twvTermsOpen()">Terms / सर्त</a></div>
+
+<div id="twvTerms" onclick="if(event.target===this)twvTermsClose()"><div class="box">
+<h2>Terms of use / प्रयोगका सर्त</h2>
+
+<h3>१. उद्देश्य / Purpose</h3>
+<p>यो औजार सिक्न र बुझ्नका लागि हो। यसले किन्ने, बेच्ने वा राख्ने कुनै सल्लाह दिँदैन।</p>
+<p class="en">This tool is for learning and understanding. It does not give advice to buy, sell or hold anything.</p>
+
+<h3>२. डेटा / Data</h3>
+<p>Data NEPSE को दैनिक (EOD) भाउबाट बनेको हो। यसमा ढिलाइ वा गल्ती हुन सक्छ। निर्णयअघि आधिकारिक स्रोतबाट जाँच गर्नुहोस्। बितेको भाउले आगामी भाउको ग्यारेन्टी गर्दैन।</p>
+<p class="en">Data comes from NEPSE end-of-day prices. It can be late or wrong, so check official sources before deciding. Past prices do not guarantee future prices.</p>
+
+<h3>३. जोखिम / Risk</h3>
+<p>तपाईंले गर्ने लगानी र त्यसको नतिजा तपाईंको आफ्नै हो। आवश्यक भए योग्य सल्लाहकारसँग सोध्नुहोस्।</p>
+<p class="en">Any investment you make, and its result, is your own responsibility. Ask a qualified adviser if you need one.</p>
+
+<h3>४. प्रतिलिपि अधिकार / Copyright</h3>
+<p>&copy; 2026 Trade With Vibes। यो app को कोड, डिजाइन, रङ-संयोजन र लेख सुरक्षित छन्। लिखित अनुमति बिना copy, बिक्री, पुनः प्रकाशन वा कोड खोलेर नक्कल गर्न पाइँदैन। आफ्नो सिक्ने प्रयोग र link बाँड्न स्वतन्त्र हुनुहुन्छ।</p>
+<p class="en">&copy; 2026 Trade With Vibes. The code, design, colour scheme and text of this app are protected. Do not copy, sell, republish or reverse-engineer it without written permission. You are free to use it for your own learning and to share the link.</p>
+
+<h3>५. निजीपन / Privacy</h3>
+<p>यो app ले तपाईंले हालेको data र सेटिङ तपाईंकै उपकरणमा राख्छ। यसले आफैँ व्यक्तिगत जानकारी जम्मा गर्दैन। अक्षर (font) Google Fonts बाट आउँछ।</p>
+<p class="en">This app keeps the data and settings you load on your own device. It does not collect personal information itself. Fonts are loaded from Google Fonts.</p>
+
+<h3>६. परिवर्तन / Changes</h3>
+<p>यो सेवा वा यी सर्त सूचना बिना बदलिन वा बन्द हुन सक्छन्।</p>
+<p class="en">This service or these terms may change or stop without notice.</p>
+
+<button type="button" onclick="twvTermsClose()">बुझेँ / Close</button>
+</div></div>
 <div class="toast" id="toast"></div>
 <div class="twv-wm" id="twvWm"><b id="twvWmSym"></b><span>TRADE WITH VIBES</span></div>
 <img src="data:image/jpeg;base64,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" alt="Trade With Vibes" style="position:fixed;left:10px;bottom:10px;width:36px;height:36px;mix-blend-mode:screen;opacity:.9;pointer-events:none;z-index:40">
@@ -540,5 +581,10 @@ function twvShareDone(d){
 <script>
 // make the app installable (home screen / Play Store wrapper); the service worker is network-first so updates always arrive
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){ window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+</script>
+<script>
+function twvTermsOpen(){ document.getElementById('twvTerms').style.display='flex'; }
+function twvTermsClose(){ document.getElementById('twvTerms').style.display='none'; }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') twvTermsClose(); });
 </script>
 </body></html>
