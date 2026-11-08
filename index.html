@@ -2,7 +2,7 @@
 <!-- saved from url=(0059)file:///C:/Users/DELL/Downloads/trade_with_vibes_suite.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<title>Trade With Vibes — Suite v44</title>
+<title>Trade With Vibes — Suite v45</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#040B16">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -38,7 +38,18 @@ iframe.active{display:block}
 .twv-foot{flex:0 0 auto;padding:4px 12px 4px 58px;background:#080E1A;border-top:1px solid rgba(0,229,255,.18);font-family:'Share Tech Mono',monospace;font-size:9.5px;color:rgba(212,232,255,.55);display:flex;gap:10px;flex-wrap:wrap;align-items:center;line-height:1.5}
 .twv-foot a{color:#39FF7A;cursor:pointer;text-decoration:none}
 @media (max-width:600px){.twv-foot{font-size:8.5px;padding:3px 8px 3px 48px;gap:8px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}.twv-foot span:nth-child(2){display:none}}
-#twvTerms{position:fixed;inset:0;background:rgba(2,6,12,.88);z-index:80;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+#twvGate{position:fixed;inset:0;z-index:70;background:rgba(2,6,12,.97);display:none;align-items:center;justify-content:center;overflow:auto;padding:18px}
+#twvGate .box{max-width:560px;width:100%;background:#0C1520;border:1px solid rgba(57,255,122,.45);border-left:5px solid #39FF7A;border-radius:8px;padding:20px 22px;color:#D4E8FF;font-size:13.5px;line-height:1.65}
+#twvGate h2{font-size:16px;color:#39FF7A;margin-bottom:10px}
+#twvGate ol{margin:0 0 8px 18px;padding:0}
+#twvGate li{margin-bottom:4px}
+#twvGate .en{color:#9FB4D0;font-size:12px;margin:6px 0 12px}
+#twvGate label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:10px 0 4px;padding:10px;border:1px dashed rgba(57,255,122,.45);border-radius:6px}
+#twvGate input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:0 0 auto;accent-color:#39FF7A}
+#twvGate button{margin-top:12px;padding:10px 26px;border-radius:4px;border:1px solid #39FF7A;background:#39FF7A;color:#04120A;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+#twvGate button:disabled{opacity:.35;cursor:not-allowed}
+#twvGate a{color:#00E5FF;cursor:pointer;text-decoration:none}
+#twvTerms{position:fixed;inset:0;background:rgba(2,6,12,.88);z-index:90;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
 #twvTerms .box{max-width:760px;width:100%;background:#0C1520;border:1px solid rgba(57,255,122,.35);border-radius:8px;padding:18px 20px;color:#D4E8FF;font-size:13px;line-height:1.65}
 #twvTerms h2{font-size:16px;color:#39FF7A;margin-bottom:8px}
 #twvTerms h3{font-size:13px;color:#00E5FF;margin:12px 0 3px}
@@ -109,6 +120,17 @@ iframe.active{display:block}
 <p class="en">This service or these terms may change or stop without notice.</p>
 
 <button type="button" onclick="twvTermsClose()">बुझेँ / Close</button>
+</div></div>
+<div id="twvGate"><div class="box">
+<h2>प्रवेशअघि बुझ्नुहोस् / Before you enter</h2>
+<ol>
+<li>यो प्रविधि <b>सिक्नका लागि</b> हो। यो किन्ने, बेच्ने वा राख्ने <b>सल्लाह होइन।</b></li>
+<li>यसले <b>के भइसक्यो</b> भन्ने देखाउँछ। <b>के हुनेछ</b> भन्ने ग्यारेन्टी गर्दैन।</li>
+<li>Data दैनिक (EOD) हो, ढिलो वा गलत हुन सक्छ। लगानी र त्यसको नतिजा तपाईंको आफ्नै हो।</li>
+</ol>
+<div class="en">This is a learning tool, not buying or selling advice. It shows what has already happened, not what will happen. Data is end-of-day and can be late or wrong. Your investment and its result are your own responsibility.</div>
+<label><input type="checkbox" id="twvGateChk" onchange="document.getElementById('twvGateBtn').disabled=!this.checked"><span>मैले माथिका कुरा बुझेँ र <a onclick="event.preventDefault();twvTermsOpen()">सर्त (Terms)</a> स्वीकार गर्छु।<br><span style="color:#9FB4D0;font-size:12px">I have understood the above and accept the Terms.</span></span></label>
+<button type="button" id="twvGateBtn" disabled onclick="twvGateEnter()">प्रवेश गर्नुहोस् / Enter</button>
 </div></div>
 <div class="toast" id="toast"></div>
 <div class="twv-wm" id="twvWm"><b id="twvWmSym"></b><span>TRADE WITH VIBES</span></div>
@@ -586,5 +608,10 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){ window.
 function twvTermsOpen(){ document.getElementById('twvTerms').style.display='flex'; }
 function twvTermsClose(){ document.getElementById('twvTerms').style.display='none'; }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') twvTermsClose(); });
+</script>
+<script>
+// entry gate: nobody gets in until they tick "understood" once on this device (client-side reminder, not a server lock)
+(function(){ var ok=false; try{ ok = localStorage.getItem('twv_gate_v1')==='1'; }catch(e){} if(!ok){ document.getElementById('twvGate').style.display='flex'; } })();
+function twvGateEnter(){ if(!document.getElementById('twvGateChk').checked) return; try{ localStorage.setItem('twv_gate_v1','1'); }catch(e){} document.getElementById('twvGate').style.display='none'; }
 </script>
 </body></html>
